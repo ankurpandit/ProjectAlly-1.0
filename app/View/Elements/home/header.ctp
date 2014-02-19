@@ -1,8 +1,8 @@
 <?php
     $act = $this->request->params['action'];
     $cont = $this->request->params['controller'];
-	$role = $this->Session->read('role');
-    $name = $this->Session->read('name');
+	$role = $this->Session->read('User.role');
+    $name = $this->Session->read('User.name');
 ?>
 <div class="navbar navbar-fixed-top">
 	<div class="navbar-inner">

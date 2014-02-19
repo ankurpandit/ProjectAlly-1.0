@@ -78,7 +78,7 @@
 			$this->redirect(array('action' => 'eventtype'));
 		}
 		function event() {
-			if($this->Session->read('role')==1)
+			if($this->Session->read('User.role')==1)
 				$this->set('events', $this->Event->find('all'));			
 			else
 				$this->set('events', $this->Event->find('all', array('conditions' => array('profile_id' => $this->Session->read('id')))));

@@ -1,5 +1,5 @@
 <?php
-    $role = $this->Session->read('role');
+    $role = $this->Session->read('User.role');
 ?>
 <div class="row-fluid">
     <div class="span12">

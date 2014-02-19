@@ -1,7 +1,18 @@
 <?php
 class BugAndFeature extends AppModel {
-    //model name is commented to check how model can be used in other files without specifying the name
-    public $name = 'BugAndFeature';
+    
+   	public $name = 'BugAndFeature';
     public $useTable = 'bugs_and_features';
+    public $belongsTo = array(
+        'Status' => array(
+            'className' => 'Status',
+            'foreignKey' => 'status'
+        ),
+        'Priority' => array(
+            'className' => 'Priority',
+            'foreignKey' => 'priority_id'
+        )
+    );
+
 }
 ?>

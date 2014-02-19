@@ -18,9 +18,9 @@ class HomeController extends AppController {
 		
 		//$this->disableCache();
 		if ($this->request->params['action'] == 'index') {
-			$name = $this->Session->read('name');
-			$role = $this->Session->read('role');
-			if (isset($name)) {
+			$name = $this->Session->read('User.name');
+			$role = $this->Session->read('User.role');
+			if(isset($name)) {
 				$this->redirect(array('controller' => 'Home', 'action' => 'HomePage'));
 			}
 		}
@@ -35,10 +35,26 @@ class HomeController extends AppController {
 	}
 	
 	public function signIn(){
-	
+		$this->layout = "blank";
+		if(!empty($this->request->data)){
+			$dbuser = $this->UserInfo->Find('first',array('conditions' => 
+													array('UserInfo.input_email' => $this->request->data['UserInfo']['input_email'],
+														  'UserInfo.input_password' => $this->request->data['UserInfo']['input_password'],
+														  'UserInfo.status' => '1')));
+			
+			if (empty($dbuser)){
+					$this->redirect(array('controller' => 'Home', 'action' => 'loginfailure'));
+			} else {
+				$this->Session->write('User.name',$dbuser['UserInfo']['user_name']);
+				$this->Session->write('User.role',$dbuser['UserInfo']['user_role']);
+				$this->Session->write('User.id',$dbuser['UserInfo']['id']);
+				$this->redirect(array('controller' => 'Home', 'action' => 'HomePage'));
+			}
+		}
 	}
 	
 	public function signUp(){
+		$this->layout = "blank";
 		if(!empty($this->request->data)){
 			if($this->Profile->save($this->request->data)){
 				$this->Session->setFlash('You have been successfully registered.. Please wait for the confirmation..!', 'success');
@@ -51,13 +67,24 @@ class HomeController extends AppController {
 	}
 	
 	public function HomePage() {
+		$ticketDetails = $this->BugAndFeature->find('all', array('conditions' => array('BugAndFeature.assigned_to' => $this->Session->read('User.id'))));
+		
+		$projectDetails = $this->AddProject->find('all');
+		$bugDetails = $this->BugAndFeature->find('all');
+		$milestoneDetails =  $this->Milestone->find('all');
+		$feedDetails = array_merge($projectDetails, $bugDetails, $milestoneDetails);
+		$feedDetails = $this->array_sort($feedDetails, 'created', SORT_ASC);
+		
+		$collaboratedProjects = $this->ProjectMember->find('all', array('conditions' => array('ProjectMember.profile_id' => $this->Session->read('User.id'))));
+		
+		$this->set('feedDetails', $feedDetails);
+		$this->set('ticketDetails', $ticketDetails);
+		$this->set('collaboratedProjects', $collaboratedProjects);
 		$this->set('leaveRequests', $this->Profile->find('all', array('conditions' => array('Profile.leave_request !=' => 0))));
-		$this->set('leaveDetails', $this->Event->find('all'));
-		$this->set('bugDetails', $this->BugAndFeature->find('all'));
-		$this->set('projectDetails', $this->AddProject->find('all'));
 		$this->set('users', $this->Profile->find('all'));
 		$this->set('project_members', $this->ProjectMember->find('all'));
-		$this->set('milestoneDetails', $this->Milestone->find('all'));
+		$this->set('leaveDetails', $this->Event->find('all'));
+		
 	}
 	
 	
@@ -97,4 +124,45 @@ class HomeController extends AppController {
 	public function printDocument(){
 	
 	}
+	public function logout() {
+		//function to logout
+		$this->Session->destroy();
+		$this->redirect(array('controller' => 'Home', 'action' => 'index'));
+	}
+	function array_sort($array, $on, $order=SORT_ASC) {
+	    $new_array = array();
+	    $sortable_array = array();
+
+	    if (count($array) > 0) {
+	        foreach ($array as $k => $v) {
+	        	$key_array = array_keys($v);  
+        		$key = $key_array['0'];
+	            if (is_array($v[$key])) {
+	            	foreach ($v[$key] as $k2 => $v2) {
+	                    if ($k2 == $on) {
+	                        $sortable_array[$k] = $v2;
+	                    }
+	                }
+	            } else {
+	                $sortable_array[$k] = $v;
+	            }
+	        }
+
+	        switch ($order) {
+	            case SORT_ASC:
+	                asort($sortable_array);
+	            break;
+	            case SORT_DESC:
+	                arsort($sortable_array);
+	            break;
+	        }
+
+	        foreach ($sortable_array as $k => $v) {
+	            $new_array[$k] = $array[$k];
+	        }
+	    }
+
+	    return $new_array;
+	}
+
 }

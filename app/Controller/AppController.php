@@ -34,11 +34,16 @@ class AppController extends Controller {
 	public $components = array('DebugKit.Toolbar', 'Session', 'FileUpload.Upload');
 	public $helpers = array('AssetCompress.AssetCompress', 'FileUpload.UploadForm', 'Js' =>array('JQuery'));
 	
+	public $theme = "avocado";
 	public $uses = array('UserInfo', 'Profile', 'AddProject');
 	
 	//Manually defined functions
 	
 	public function beforeFilter(){
+
+		$this->_checkLogin();
+
+
 		//next two lines are to count the number of pending users
 		$notify = $this->Profile->find('count', array('conditions' => array('Profile.status' => 0)));
 		$this->set(compact('notify'));
@@ -50,55 +55,30 @@ class AppController extends Controller {
 		$this->Upload->profile_check = $this->Session->read('profile_check');
 			
 		//To check whether an user is logged in or not
-		$name = $this->Session->read('name');
+		$name = $this->Session->read('User.name');
 	}
 	public function authenticate() {
-		//function to authenticate a user
-		$test = $this->UserInfo->Find('first',array('conditions' => 
-												array('UserInfo.input_email' => $this->data['UserInfo']['input_email'],
-													  'UserInfo.input_password' => $this->data['UserInfo']['input_password'],
-													  'UserInfo.status' => '1')));
 		
-		//print_r($test);
-		$name = $this->Session->read('name');
-		if (!isset($name)) {
-			if ($test == null)
-				{
-					$this->redirect(array('controller' => 'Home', 'action' => 'loginfailure'));
-				}
-				else 
-				{
-					echo "login successful";
-					$this->Session->write('name',$test['UserInfo']['user_name']);
-					$this->Session->write('role',$test['UserInfo']['user_role']);
-					$this->Session->write('id',$test['UserInfo']['id']);
-					$this->redirect(array('controller' => 'Home', 'action' => 'HomePage'));
-					exit();
-				}
-			
-			exit();
-		}
-		else{
-			echo "Already logged in";		
-		}
+		
 	}
 	
-	public function logout() {
-		//function to logout
-		$this->Session->destroy();
-		$this->redirect(array('controller' => 'Home', 'action' => 'index'));
-	}
+	
 	
 	public function isSuperAdminLogged(){
-		if($this->Session->read('role')==1)
+		if($this->Session->read('User.role')==1)
 			return true;
 		else
 			return false;
 	}
 	public function isAdminLogged(){
-		if($this->Session->read('role')==1)
+		if($this->Session->read('User.role')==1)
 			return true;
 		else
 			return false;
+	}
+	public function _checkLogin(){
+		// if(!$this->Session->check('User')){
+		// 	$this->redirect(array('controller' => 'Home', 'action' => 'index'));
+		// }
 	}
 }
