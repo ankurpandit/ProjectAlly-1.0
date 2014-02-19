@@ -10,7 +10,7 @@
                       <h1>Project Management</h1>
                       <p>
                         ProjectAlly offers a comprehensive Project Management system which would enable the company to carry out
-                        effective implementation of the project.
+                        effective implementation of the project.testss
                       </p>
                       <h3>
                           <?php echo $this->Html->link('Learn More', array('controller' => 'Home', 'action' => 'signUp'),
